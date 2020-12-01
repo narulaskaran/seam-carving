@@ -1,7 +1,7 @@
 import javax.imageio.*;
 import java.io.*;
 import java.awt.image.*;
-import java.awt.color.*;
+import java.awt.Color;
 
 /**
  * Class to resize images in a content-aware manner. Implements the Seam Carving
@@ -10,7 +10,6 @@ import java.awt.color.*;
 public class ImageResizer {
   String path;
   private BufferedImage image;
-  ColorModel rgb;
 
   /**
    * Creates a new ImageResizer instance.
@@ -21,44 +20,71 @@ public class ImageResizer {
   public ImageResizer(String path) throws IOException {
     this.path = path;
     this.image = ImageIO.read(new File(path));
-    this.rgb = image.getColorModel();
   }
 
-  // TODO: implement runner to call carveVerticalSeam() multiple times in a loop
   public void resize(int pixels) {
     checkState();
 
     // shrink by #{pixels} columns
     for (int seams = 0; seams < pixels; seams++) {
-
+      if (seams % 5 == 0) {
+        System.out.println(seams);
+      }
+      this.image = this.carveVerticalSeam();
     }
   }
 
-  public void carveVerticalSeam() {
-    // calculate individual pixel energy levels
+  public BufferedImage carveVerticalSeam() {
+    // store individual energy levels
     double[][] energy = new double[image.getHeight()][image.getWidth()];
+    // store back pointers
+    int[][] ptr = new int[image.getHeight()][image.getWidth()];
+
+    // calculate individual pixel energy levels
     for (int row = 0; row < energy.length; row++) {
       for (int col = 0; col < energy[0].length; col++) {
         energy[row][col] = (new Pixel(row, col)).energyLevel();
+        ptr[row][col] = -1;
       }
     }
 
-    // calculate seam energy levels
+    // calculate seam energy levels and store back pointers
     for (int row = 1; row < energy.length; row++) {
       for (int col = 0; col < energy[0].length; col++) {
         double min = energy[row - 1][col];
+        int parent = col;
+
         if (col - 1 >= 0) {
           min = Math.min(min, energy[row - 1][col - 1]);
+          parent = col - 1;
         }
         if (col + 1 < image.getWidth()) {
           min = Math.min(min, energy[row - 1][col + 1]);
+          parent = col + 1;
         }
 
         energy[row][col] += min;
+        ptr[row][col] = parent;
       }
     }
 
-    // TODO: trace through the energy matrix to identify the seam path
+    // Copy over image data minus the low-energy seam
+    BufferedImage output = new BufferedImage(image.getWidth() - 1, image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+    int row = output.getHeight() - 1;
+    int tail = mindex(energy[row]);
+    for (; row >= 0; row--) {
+      int imagePtr = 0;
+      for (int col = 0; col < output.getWidth(); col++) {
+        if (imagePtr == tail) {
+          imagePtr++;
+        }
+        output.setRGB(col, row, image.getRGB(imagePtr, row));
+        imagePtr++;
+      }
+      tail = ptr[row][tail];
+    }
+
+    return output;
   }
 
   /**
@@ -68,7 +94,15 @@ public class ImageResizer {
    */
   public boolean export() {
     checkState();
-    return false;
+
+    try {
+      File outputFile = new File("./RESIZED.jpg");
+      ImageIO.write(this.image, "png", outputFile);
+      return true;
+    } catch (IOException e) {
+      System.out.println(String.format("Error exporting image with message:%n%s", e.getMessage()));
+      return false;
+    }
   }
 
   /**
@@ -81,6 +115,29 @@ public class ImageResizer {
     if (image == null) {
       throw new IllegalStateException();
     }
+  }
+
+  /**
+   * Finds the index of the smallest element of a double[]
+   *
+   * @param arr array of doubles
+   * @return the index of the smallest element in the array
+   */
+  private int mindex(double[] arr) {
+    if (arr.length == 0) {
+      return -1;
+    }
+
+    double min = arr[0];
+    int mindex = 0;
+    for (int i = 0; i < arr.length; i++) {
+      if (arr[i] < min) {
+        min = arr[i];
+        mindex = i;
+      }
+    }
+
+    return mindex;
   }
 
   /**
@@ -97,10 +154,10 @@ public class ImageResizer {
       this.row = row;
       this.col = col;
 
-      int pixel = row * image.getWidth() + col;
-      this.r = rgb.getRed(pixel);
-      this.g = rgb.getGreen(pixel);
-      this.b = rgb.getBlue(pixel);
+      Color color = new Color(image.getRGB(col, row));
+      this.r = color.getRed();
+      this.g = color.getGreen();
+      this.b = color.getBlue();
     }
 
     public double energyLevel() {
@@ -136,8 +193,8 @@ public class ImageResizer {
    */
   public static void main(String[] args) {
     try {
-      ImageResizer tool = new ImageResizer("img/stage.jpg");
-      tool.resize();
+      ImageResizer tool = new ImageResizer("./img/zoom.png");
+      tool.resize(20);
       boolean exported = tool.export();
 
       if (!exported) {
@@ -145,6 +202,7 @@ public class ImageResizer {
       }
     } catch (Exception e) {
       System.out.println(String.format("Local class testing failed with the following message:%n%s", e.getMessage()));
+      e.printStackTrace();
     }
   }
 }
