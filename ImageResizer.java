@@ -22,18 +22,26 @@ public class ImageResizer {
     this.image = ImageIO.read(new File(path));
   }
 
+  /**
+   * Shrinks the image horizontally by #{pixels} pixels
+   * @param pixels number of pixel seams to remove from the image
+   */
   public void resize(int pixels) {
     checkState();
 
     // shrink by #{pixels} columns
     for (int seams = 0; seams < pixels; seams++) {
-      if (seams % 5 == 0) {
+      if (seams % 10 == 0) {
         System.out.println(seams);
       }
       this.image = this.carveVerticalSeam();
     }
   }
 
+  /**
+   * Removes the lowest energy vertical seam from the image.
+   * @return a new BufferedImage instance with one seam of pixels removed
+   */
   public BufferedImage carveVerticalSeam() {
     // store individual energy levels
     double[][] energy = new double[image.getHeight()][image.getWidth()];
@@ -54,11 +62,11 @@ public class ImageResizer {
         double min = energy[row - 1][col];
         int parent = col;
 
-        if (col - 1 >= 0) {
+        if (col - 1 >= 0 && Math.min(min, energy[row - 1][col - 1]) != min) {
           min = Math.min(min, energy[row - 1][col - 1]);
           parent = col - 1;
         }
-        if (col + 1 < image.getWidth()) {
+        if (col + 1 < image.getWidth() && Math.min(min, energy[row - 1][col + 1]) != min) {
           min = Math.min(min, energy[row - 1][col + 1]);
           parent = col + 1;
         }
@@ -94,7 +102,6 @@ public class ImageResizer {
    */
   public boolean export() {
     checkState();
-
     try {
       File outputFile = new File("./RESIZED.jpg");
       ImageIO.write(this.image, "png", outputFile);
@@ -141,7 +148,7 @@ public class ImageResizer {
   }
 
   /**
-   * Container class to hold row/col indices for a particular pixel
+   * Container class to hold color information for a particular pixel
    */
   private class Pixel {
     int row;
@@ -150,6 +157,11 @@ public class ImageResizer {
     int g;
     int b;
 
+    /**
+     * Creates a new Pixel instance
+     * @param row y coordinate of the pixel
+     * @param col x coordinate of the pixel
+     */
     public Pixel(int row, int col) {
       this.row = row;
       this.col = col;
@@ -160,6 +172,10 @@ public class ImageResizer {
       this.b = color.getBlue();
     }
 
+    /**
+     * Calculates the energy level of an individual pixel
+     * @return energy level for this pixel
+     */
     public double energyLevel() {
       double energyX = 0;
       double energyY = 0;
@@ -183,18 +199,22 @@ public class ImageResizer {
       return energyX + energyY;
     }
 
+    /**
+     * Calculate the energy difference between this pixel and the provided on
+     * @param other the other pixel instance to calculate energy offsets with
+     */
     public double calculateEnergyDiff(Pixel other) {
       return Math.pow((this.r - other.r), 2) + Math.pow((this.g - other.g), 2) + Math.pow((this.b - other.b), 2);
     }
   }
 
   /**
-   * For testing the class
+   * For running the class
    */
   public static void main(String[] args) {
     try {
-      ImageResizer tool = new ImageResizer("./img/zoom.png");
-      tool.resize(20);
+      ImageResizer tool = new ImageResizer("./img/stage.jpg");
+      tool.resize(100);
       boolean exported = tool.export();
 
       if (!exported) {
