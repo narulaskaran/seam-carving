@@ -33,6 +33,7 @@ public class ImageResizer {
     for (int seams = 0; seams < pixels; seams++) {
       if (seams % 10 == 0) {
         System.out.println(seams);
+        this.export("./resized/"+ seams + ".png");
       }
       this.image = this.carveVerticalSeam();
     }
@@ -100,10 +101,10 @@ public class ImageResizer {
    *
    * @return returns true if image is exported successfully, false otherwise
    */
-  public boolean export() {
+  public boolean export(String outputPath) {
     checkState();
     try {
-      File outputFile = new File("./RESIZED.jpg");
+      File outputFile = new File(outputPath);
       ImageIO.write(this.image, "png", outputFile);
       return true;
     } catch (IOException e) {
@@ -213,13 +214,8 @@ public class ImageResizer {
    */
   public static void main(String[] args) {
     try {
-      ImageResizer tool = new ImageResizer("./img/stage.jpg");
-      tool.resize(100);
-      boolean exported = tool.export();
-
-      if (!exported) {
-        throw new Exception("Failed to export image");
-      }
+      ImageResizer tool = new ImageResizer("./img/dog.jpg");
+      tool.resize(700);
     } catch (Exception e) {
       System.out.println(String.format("Local class testing failed with the following message:%n%s", e.getMessage()));
       e.printStackTrace();
