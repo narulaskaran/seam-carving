@@ -24,6 +24,7 @@ public class ImageResizer {
 
   /**
    * Shrinks the image horizontally by #{pixels} pixels
+   * 
    * @param pixels number of pixel seams to remove from the image
    */
   public void resize(int pixels) {
@@ -33,7 +34,7 @@ public class ImageResizer {
     for (int seams = 0; seams < pixels; seams++) {
       if (seams % 10 == 0) {
         System.out.println(seams);
-        this.export("./resized/"+ seams + ".png");
+        this.export("./resized/" + seams + ".png");
       }
       this.image = this.carveVerticalSeam();
     }
@@ -41,6 +42,7 @@ public class ImageResizer {
 
   /**
    * Removes the lowest energy vertical seam from the image.
+   * 
    * @return a new BufferedImage instance with one seam of pixels removed
    */
   public BufferedImage carveVerticalSeam() {
@@ -49,13 +51,7 @@ public class ImageResizer {
     // store back pointers
     int[][] ptr = new int[image.getHeight()][image.getWidth()];
 
-    // calculate individual pixel energy levels
-    for (int row = 0; row < energy.length; row++) {
-      for (int col = 0; col < energy[0].length; col++) {
-        energy[row][col] = (new Pixel(row, col)).energyLevel();
-        ptr[row][col] = -1;
-      }
-    }
+    calcInitEnergyLevels(energy);
 
     // calculate seam energy levels and store back pointers
     for (int row = 1; row < energy.length; row++) {
@@ -63,11 +59,11 @@ public class ImageResizer {
         double min = energy[row - 1][col];
         int parent = col;
 
-        if (col - 1 >= 0 && Math.min(min, energy[row - 1][col - 1]) != min) {
+        if (col - 1 >= 0 && energy[row - 1][col - 1] < min) {
           min = Math.min(min, energy[row - 1][col - 1]);
           parent = col - 1;
         }
-        if (col + 1 < image.getWidth() && Math.min(min, energy[row - 1][col + 1]) != min) {
+        if (col + 1 < image.getWidth() && energy[row - 1][col + 1] < min) {
           min = Math.min(min, energy[row - 1][col + 1]);
           parent = col + 1;
         }
@@ -94,6 +90,95 @@ public class ImageResizer {
     }
 
     return output;
+  }
+
+  /**
+   * Removes the lowest energy horizontal seam from the image.
+   * 
+   * @return a new BufferedImage instance with one seam of pixels removed
+   */
+  public BufferedImage carveHorizontalSeam() {
+    // store individual energy levels
+    double[][] energy = new double[image.getHeight()][image.getWidth()];
+    // store back pointers
+    int[][] ptr = new int[image.getHeight()][image.getWidth()];
+
+    calcInitEnergyLevels(energy);
+
+    // calculate seam energy levels and store back pointers
+    for (int col = 1; col < energy[0].length; col++) {
+      for (int row = 0; row < energy.length; row++) {
+        double min = energy[row][col - 1];
+        int parent = row;
+
+        if (row - 1 >= 0 && energy[row - 1][col - 1] < min) {
+          min = energy[row - 1][col - 1];
+          parent = row - 1;
+        }
+        if (row + 1 < image.getHeight() && energy[row + 1][col - 1] < min) {
+          min = energy[row + 1][col - 1];
+          parent = row + 1;
+        }
+
+        energy[row][col] += min;
+        ptr[row][col] = parent;
+      }
+    }
+
+    // find lowest energy seam tail
+    BufferedImage output = new BufferedImage(image.getWidth(), image.getHeight() - 1, BufferedImage.TYPE_INT_ARGB);
+    int col = output.getWidth() - 1;
+    double[] endCol = new double[image.getHeight()];
+    extractColumn(energy, endCol, col);
+    int tail = mindex(endCol);
+
+    // Copy over image data minus the low-energy seam
+    for (; col >= 0; col--) {
+      int imagePtr = 0;
+      for (int row = 0; row < output.getHeight(); row++) {
+        if (imagePtr == tail) {
+          imagePtr++;
+        }
+        output.setRGB(col, row, image.getRGB(col, imagePtr));
+        imagePtr++;
+      }
+      tail = ptr[tail][col];
+    }
+
+    return output;
+  }
+
+  /**
+   * Extract a specified column from a 2D array. Populates the param values with
+   * the values in column col from array arr
+   * 
+   * @param arr    2D matrix with x rows and y columns
+   * @param values the output array of length x
+   * @param col    column index between 0 and y - 1
+   */
+  private void extractColumn(double[][] arr, double[] values, int col) {
+    if (arr.length != values.length || col < 0 || col > arr[0].length) {
+      throw new IllegalArgumentException();
+    }
+
+    for (int row = 0; row < arr.length; row++) {
+      values[row] = arr[row][col];
+    }
+  }
+
+  /**
+   * Fill array with initial energy levels of each pixel in this.image
+   * @param arr 2D array of doubles with same dimensions as this.image
+   */
+  private void calcInitEnergyLevels(double[][] arr) {
+    if (arr.length != this.image.getHeight() || arr[0].length != this.image.getWidth()) {
+      throw new IllegalArgumentException();
+    }
+    for (int row = 0; row < arr.length; row++) {
+      for (int col = 0; col < arr[0].length; col++) {
+        arr[row][col] = (new Pixel(row, col)).energyLevel();
+      }
+    }
   }
 
   /**
@@ -160,6 +245,7 @@ public class ImageResizer {
 
     /**
      * Creates a new Pixel instance
+     * 
      * @param row y coordinate of the pixel
      * @param col x coordinate of the pixel
      */
@@ -175,6 +261,7 @@ public class ImageResizer {
 
     /**
      * Calculates the energy level of an individual pixel
+     * 
      * @return energy level for this pixel
      */
     public double energyLevel() {
@@ -202,6 +289,7 @@ public class ImageResizer {
 
     /**
      * Calculate the energy difference between this pixel and the provided on
+     * 
      * @param other the other pixel instance to calculate energy offsets with
      */
     public double calculateEnergyDiff(Pixel other) {
@@ -214,7 +302,7 @@ public class ImageResizer {
    */
   public static void main(String[] args) {
     try {
-      ImageResizer tool = new ImageResizer("./img/dog.jpg");
+      ImageResizer tool = new ImageResizer("./img/wall.jpg");
       tool.resize(700);
     } catch (Exception e) {
       System.out.println(String.format("Local class testing failed with the following message:%n%s", e.getMessage()));
