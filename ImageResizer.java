@@ -23,21 +23,43 @@ public class ImageResizer {
   }
 
   /**
-   * Shrinks the image horizontally by #{pixels} pixels
+   * Scales down the image by the provided ratio. Shrinks using seam carving
+   * technique.
    * 
-   * @param pixels number of pixel seams to remove from the image
+   * @param ratio percentage of the original image size
    */
-  public void resize(int pixels) {
+  public void resize(double ratio) {
     checkState();
+    ratio = 1 - ratio;
 
-    // shrink by #{pixels} columns
-    for (int seams = 0; seams < pixels; seams++) {
-      if (seams % 10 == 0) {
-        System.out.println(seams);
-        this.export("./resized/" + seams + ".png");
+    // calculate num pixels to remove in each direction
+    int vert = (int) (image.getHeight() * ratio);
+    int hor = (int) (image.getHeight() * ratio);
+
+    // set up progress calc
+    double originalHeight = this.image.getHeight();
+    double originalWidth = this.image.getWidth();
+    int progress = 0;
+
+    while (vert-- > 0 && hor-- > 0) {
+      if (progress++ % 8 == 0) {
+        this.export("./resized/" + progress + ".png");
+        System.out.println(Math.abs(1 - ((this.image.getHeight() / originalHeight + this.image.getWidth() / originalWidth) / 2)) / ratio);
       }
       this.image = this.carveVerticalSeam();
+      this.image = this.carveHorizontalSeam();
     }
+
+    boolean vertical = vert != 0;
+    for (int i = 0; i < Math.max(vert, hor); i++) {
+      if (vertical) {
+        this.image = this.carveVerticalSeam();
+      } else {
+        this.image = this.carveHorizontalSeam();
+      }
+    }
+
+    this.export("./resized/shrunk.png");
   }
 
   /**
@@ -45,7 +67,7 @@ public class ImageResizer {
    * 
    * @return a new BufferedImage instance with one seam of pixels removed
    */
-  public BufferedImage carveVerticalSeam() {
+  private BufferedImage carveVerticalSeam() {
     // store individual energy levels
     double[][] energy = new double[image.getHeight()][image.getWidth()];
     // store back pointers
@@ -97,7 +119,7 @@ public class ImageResizer {
    * 
    * @return a new BufferedImage instance with one seam of pixels removed
    */
-  public BufferedImage carveHorizontalSeam() {
+  private BufferedImage carveHorizontalSeam() {
     // store individual energy levels
     double[][] energy = new double[image.getHeight()][image.getWidth()];
     // store back pointers
@@ -168,6 +190,7 @@ public class ImageResizer {
 
   /**
    * Fill array with initial energy levels of each pixel in this.image
+   * 
    * @param arr 2D array of doubles with same dimensions as this.image
    */
   private void calcInitEnergyLevels(double[][] arr) {
@@ -186,7 +209,7 @@ public class ImageResizer {
    *
    * @return returns true if image is exported successfully, false otherwise
    */
-  public boolean export(String outputPath) {
+  private boolean export(String outputPath) {
     checkState();
     try {
       File outputFile = new File(outputPath);
@@ -302,8 +325,7 @@ public class ImageResizer {
    */
   public static void main(String[] args) {
     try {
-      ImageResizer tool = new ImageResizer("./img/wall.jpg");
-      tool.resize(700);
+      (new ImageResizer("./img/elephant.jpg")).resize(0.5);
     } catch (Exception e) {
       System.out.println(String.format("Local class testing failed with the following message:%n%s", e.getMessage()));
       e.printStackTrace();
