@@ -325,7 +325,7 @@ public class ImageResizer {
    */
   public static void main(String[] args) {
     try {
-      (new ImageResizer("./img/elephant.jpg")).resize(0.5);
+      (new ImageResizer("./img/surfer.jpg")).resize(0.5);
     } catch (Exception e) {
       System.out.println(String.format("Local class testing failed with the following message:%n%s", e.getMessage()));
       e.printStackTrace();
