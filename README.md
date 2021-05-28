@@ -24,7 +24,7 @@ Some source images turned out better than others. The quality of the output is a
 ### Elephant
 ![Elephant resizing gif](resized/elephant.gif)
 ### Ranier
-![Ranier resizing gif](resized/ranier.gif)
+![Rainier resizing gif](resized/ranier.gif)
 
 In both cases, you can see that the output frames tend to center in on the key elements of the photos. In the first example, we see removal of pixels on the edges as well as in the middle (between the tree and elephant). In the second example, we see removal of pixels in the top and right of the image and preservation of the people in the bottom left corner.
 
