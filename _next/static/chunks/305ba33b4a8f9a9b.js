@@ -1,0 +1,1 @@
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,84274,t=>{t.v("/_next/static/media/seam-carving.worker.fd73f2f2.ts")}]);

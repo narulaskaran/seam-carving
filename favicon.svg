@@ -1,0 +1,19 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Grid representing an image -->
+  <rect x="80" y="80" width="352" height="352" rx="16" stroke="#B45309" stroke-width="8" fill="#B45309" opacity="0.1" />
+  <!-- Horizontal grid lines -->
+  <line x1="80" y1="168" x2="432" y2="168" stroke="#B45309" stroke-width="3" opacity="0.2" />
+  <line x1="80" y1="256" x2="432" y2="256" stroke="#B45309" stroke-width="3" opacity="0.2" />
+  <line x1="80" y1="344" x2="432" y2="344" stroke="#B45309" stroke-width="3" opacity="0.2" />
+  <!-- Vertical grid lines -->
+  <line x1="168" y1="80" x2="168" y2="432" stroke="#B45309" stroke-width="3" opacity="0.2" />
+  <line x1="256" y1="80" x2="256" y2="432" stroke="#B45309" stroke-width="3" opacity="0.2" />
+  <line x1="344" y1="80" x2="344" y2="432" stroke="#B45309" stroke-width="3" opacity="0.2" />
+  <!-- Seam path (zigzag vertical line representing the carved seam) -->
+  <path d="M280 80 L260 130 L290 180 L250 230 L270 280 L240 330 L275 380 L255 432" stroke="#B45309" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+  <!-- Scissors / cut indicator -->
+  <path d="M200 456 L220 440 L200 424" stroke="#B45309" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.6" />
+  <!-- Arrow showing resize direction -->
+  <path d="M460 220 L480 256 L460 292" stroke="#B45309" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.5" />
+  <path d="M52 220 L32 256 L52 292" stroke="#B45309" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.5" />
+</svg>
