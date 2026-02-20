@@ -1,5 +1,10 @@
 # Seam Carving
-Implementation of the seam carving algorithm for content-aware image resizing. Currently working on a Javalin web service to handle image uploads, resizing, and output. The ImageResizer.java class with the actual code for image processing can be found [here](project/src/main/java/ImageResizer.java).
+Implementation of the seam carving algorithm for content-aware image resizing. Currently working on a Javalin web service to handle image uploads, resizing, and output. The ImageResizer.java class with the actual code for image processing can be found [here](archive/project/src/main/java/ImageResizer.java).
+
+## Web App
+Try the live demo: [shrink.narula.xyz](https://shrink.narula.xyz)
+
+A browser-based implementation of the seam carving algorithm. Upload any image, set target dimensions, and watch as the algorithm removes low-energy seams in real-time. Built with Next.js and TypeScript, runs entirely client-side using Web Workers.
 
 Shout out to Avik Das' explanation of the algorithm [here.](https://avikdas.com/2019/05/14/real-world-dynamic-programming-seam-carving.html)
 
@@ -11,20 +16,20 @@ In progres...
 Some source images turned out better than others. The quality of the output is also dependent on how many iterations we put the photos through. Objects and edges in photos are more likely to become skewed as we identify and remove larger number of seams. In the following photos, we only removed vertical seams of pixels (shrinking the images horizontally).
 
 ### Wall (good)
-![Wall resizing gif](resized/wall.gif)
+![Wall resizing gif](archive/resized/wall.gif)
 
 ### Stage (warping in later iterations)
-![Stage resizing gif](resized/stage.gif)
+![Stage resizing gif](archive/resized/stage.gif)
 
 ### Dog (extensive warping)
-![Dog resizing gif](resized/dog.gif)
+![Dog resizing gif](archive/resized/dog.gif)
 
 ## Bidirectional Seam Removal Examples
  Here we shrink images both horizontally and vertically to maintain aspect ratio. 
 ### Elephant
-![Elephant resizing gif](resized/elephant.gif)
+![Elephant resizing gif](archive/resized/elephant.gif)
 ### Ranier
-![Rainier resizing gif](resized/ranier.gif)
+![Rainier resizing gif](archive/resized/ranier.gif)
 
 In both cases, you can see that the output frames tend to center in on the key elements of the photos. In the first example, we see removal of pixels on the edges as well as in the middle (between the tree and elephant). In the second example, we see removal of pixels in the top and right of the image and preservation of the people in the bottom left corner.
 
